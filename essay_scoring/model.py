@@ -2,9 +2,8 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error
 
-# Sample dataset (replace with real dataset later)
+# Sample dataset
 data = {
     "essay": [
         "this is a good essay",
@@ -18,32 +17,19 @@ data = {
 
 df = pd.DataFrame(data)
 
-# TF-IDF
+# TF-IDF vectorizer
 vectorizer = TfidfVectorizer()
 X = vectorizer.fit_transform(df["essay"])
 y = df["score"]
 
-# Train-test split
+# Train / Test split
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Model training
+# Train model
 model = LinearRegression()
 model.fit(X_train, y_train)
 
-# Prediction
-predictions = model.predict(X_test)
-
-# Evaluation
-mae = mean_absolute_error(y_test, predictions)
-print("Mean Absolute Error:", mae)
-
-# Test with new essay
-new_essay = ["this essay has good structure and content"]
-new_vector = vectorizer.transform(new_essay)
-predicted_score = model.predict(new_vector)
-
-print("Predicted Score:", round(predicted_score[0], 2))
-# Make model reusable for Flask
+# Export objects so Flask can import them
 __all__ = ["vectorizer", "model"]
