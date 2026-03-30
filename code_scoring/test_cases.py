@@ -1,61 +1,51 @@
 import multiprocessing
 import traceback
 
+multiprocessing.freeze_support()
 
-def _run_user_code(code, func_name, args, expected, q):
+def evaluate_code(code, test_cases, func_name="add"):
     """
-    Runs user code safely in a separate process.
-    Returns pass/fail result in queue.
+    Evaluates user code and returns score + detailed results
     """
-    try:
-        local_env = {}
-        exec(code, {}, local_env)
 
-        if func_name not in local_env:
-            q.put({"status": "error", "message": f"Function '{func_name}' not found in your code."})
-            return
-
-        func = local_env[func_name]
-        output = func(*args)
-
-        if output == expected:
-            q.put({"status": "ok", "passed": True})
-        else:
-            q.put({"status": "ok", "passed": False, "got": output, "expected": expected})
-
-    except Exception as e:
-        q.put({"status": "error", "message": str(e), "trace": traceback.format_exc()})
-
-
-def evaluate_code(code, test_cases, func_name="add", timeout=2):
-    """
-    Evaluates code using test cases with timeout.
-    timeout = seconds per test case
-    """
     passed = 0
     total = len(test_cases)
+    results = []
 
-    for tc in test_cases:
-        q = multiprocessing.Queue()
-        p = multiprocessing.Process(
-            target=_run_user_code,
-            args=(code, func_name, tc["input"], tc["output"], q)
-        )
+    try:
+        local_env = {}
 
-        p.start()
-        p.join(timeout)
+        # Execute user code
+        exec(code, local_env)
 
-        # Timeout happened
-        if p.is_alive():
-            p.terminate()
-            p.join()
-            continue
+        if func_name not in local_env:
+            return 0, ["❌ Function 'add' not found"]
 
-        # Read result
-        if not q.empty():
-            res = q.get()
-            if res.get("status") == "ok" and res.get("passed") is True:
-                passed += 1
+        func = local_env[func_name]
 
-    # score out of 10
-    return (passed / total) * 10 if total > 0 else 0
+        for i, tc in enumerate(test_cases):
+
+            try:
+                result = func(*tc["input"])
+
+                if result == tc["output"]:
+                    passed += 1
+                    results.append(
+                        f"✅ Test Case {i+1} Passed → Input {tc['input']} → Output {result}"
+                    )
+                else:
+                    results.append(
+                        f"❌ Test Case {i+1} Failed → Input {tc['input']} → Expected {tc['output']} but got {result}"
+                    )
+
+            except Exception as e:
+                results.append(
+                    f"❌ Test Case {i+1} Error → {str(e)}"
+                )
+
+    except Exception:
+        return 0, ["❌ Code execution failed"]
+
+    score = (passed / total) * 10 if total > 0 else 0
+
+    return round(score, 2), results
