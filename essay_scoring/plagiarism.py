@@ -11,12 +11,3 @@ def plagiarism_score(essay1, essay2):
     similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
 
     return round(similarity[0][0] * 100, 2)
-
-
-# TESTING
-if __name__ == "__main__":
-    e1 = "Artificial intelligence is the future of technology."
-    e2 = "Artificial intelligence is the future of modern technology."
-
-    score = plagiarism_score(e1, e2)
-    print("plagiarism Similarity:", score, "%")
