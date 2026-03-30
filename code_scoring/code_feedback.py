@@ -1,28 +1,32 @@
 import ast
-import traceback
-
-def check_code_errors(code: str):
-    """
-    Returns:
-    (status, message)
-    status = "ok" | "syntax_error" | "runtime_error"
-    """
-    try:
-        # Syntax check
-        ast.parse(code)
-        return "ok", "No Syntax Errors Found"
-    except SyntaxError as e:
-        return "syntax_error", f"❌ Syntax Error: {e.msg} (line {e.lineno})"
-    except Exception as e:
-        return "runtime_error", f"❌ Error while parsing code: {str(e)}"
-
 
 def get_code_feedback(code: str):
-    status, msg = check_code_errors(code)
+    """
+    Checks syntax errors and basic structure.
+    """
 
-    feedback = {
-        "status": status,
-        "message": msg
+    try:
+        ast.parse(code)
+    except SyntaxError as e:
+        return {
+            "status": "error",
+            "message": f"❌ Syntax Error: {e.msg} (line {e.lineno})"
+        }
+
+    feedback = []
+
+    if "def " not in code:
+        feedback.append("⚠️ No function defined.")
+
+    if "return" not in code:
+        feedback.append("⚠️ Missing return statement.")
+
+    if not feedback:
+        message = "✅ Code structure looks good."
+    else:
+        message = " ".join(feedback)
+
+    return {
+        "status": "ok",
+        "message": message
     }
-
-    return feedback
