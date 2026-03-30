@@ -1,5 +1,4 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
 
 def basic_features(tokenized_essay):
     total_words = len(tokenized_essay)
@@ -16,21 +15,6 @@ def tfidf_features(essays):
     return tfidf_matrix
 
 
-# TESTING
-if __name__ == "__main__":
-    essays = [
-        "this is a good essay",
-        "this essay is average",
-        "poor writing and poor structure"
-    ]
-
-    # Basic features test
-    tokens = essays[0].split()
-    print("Basic Features:", basic_features(tokens))
-
-    # TF-IDF test
-    tfidf = tfidf_features(essays)
-    print("TF-IDF Shape:", tfidf.shape)
 def explain_essay(text):
     words = text.split()
     word_count = len(words)
